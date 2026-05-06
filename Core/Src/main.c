@@ -104,7 +104,6 @@ int main(void)
     FDCAN_FILTER_REMOTE
   );
 
-
   if (halSt != HAL_OK) {
     Error_Handler();
   }
@@ -120,6 +119,8 @@ int main(void)
   }
 
   HAL_FDCAN_Start(&hfdcan1);
+
+  uint32_t timestamp = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -156,17 +157,28 @@ int main(void)
   while (1)
   {
 
-    /* -- Sample board code for User push-button in interrupt mode ---- */
-    if (BspButtonState == BUTTON_PRESSED)
-    {
-      /* Update button state */
-      BspButtonState = BUTTON_RELEASED;
-      /* -- Sample board code to toggle leds ---- */
-      BSP_LED_Toggle(LED_GREEN);
-      BSP_LED_Toggle(LED_BLUE);
-
-      /* ..... Perform your action ..... */
+    if(HAL_GetTick()-timestamp < 1000) {
+      continue;
     }
+
+    timestamp = HAL_GetTick();
+
+    BSP_LED_Toggle(LED_GREEN);
+    BSP_LED_Toggle(LED_BLUE);
+    HAL_Delay(1000);
+    FDCAN_TxHeaderTypeDef txHeaderType = {
+      .Identifier = 0x123,
+      .IdType = FDCAN_STANDARD_ID,
+      .TxFrameType = FDCAN_DATA_FRAME,
+      .DataLength = 8,
+      .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
+      .BitRateSwitch = FDCAN_BRS_OFF,
+      .FDFormat = FDCAN_CLASSIC_CAN,
+      .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
+      .MessageMarker = 0u
+    };
+    uint8_t dataArr[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+    HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &txHeaderType, dataArr);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
