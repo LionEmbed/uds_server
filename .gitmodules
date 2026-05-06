@@ -1,0 +1,6 @@
+[submodule "uds_lib"]
+	path = uds_lib
+	url = git@github.com:LionEmbed/uds_lib.git
+[submodule "isotp-c"]
+	path = isotp-c
+	url = https://github.com/LionEmbed/isotp-c.git

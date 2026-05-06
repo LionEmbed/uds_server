@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,8 +48,7 @@ __IO uint32_t BspButtonState = BUTTON_RELEASED;
 FDCAN_HandleTypeDef hfdcan1;
 
 /* USER CODE BEGIN PV */
-FDCAN_RxHeaderTypeDef rxHeader;
-FDCAN_TxHeaderTypeDef txHeader;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,8 +118,6 @@ int main(void)
   }
 
   HAL_FDCAN_Start(&hfdcan1);
-
-  uint32_t timestamp = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -144,7 +141,7 @@ int main(void)
   /* USER CODE BEGIN BSP */
 
   /* -- Sample board code to send message over COM1 port ---- */
-  printf("Welcome to STM32 world !\n\r");
+  printf("Welcome to UDS Server !\n\r");
 
   /* -- Sample board code to switch on leds ---- */
   BSP_LED_On(LED_GREEN);
@@ -154,31 +151,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  app();
   while (1)
   {
-
-    if(HAL_GetTick()-timestamp < 1000) {
-      continue;
-    }
-
-    timestamp = HAL_GetTick();
-
-    BSP_LED_Toggle(LED_GREEN);
-    BSP_LED_Toggle(LED_BLUE);
-    HAL_Delay(1000);
-    FDCAN_TxHeaderTypeDef txHeaderType = {
-      .Identifier = 0x123,
-      .IdType = FDCAN_STANDARD_ID,
-      .TxFrameType = FDCAN_DATA_FRAME,
-      .DataLength = 8,
-      .ErrorStateIndicator = FDCAN_ESI_ACTIVE,
-      .BitRateSwitch = FDCAN_BRS_OFF,
-      .FDFormat = FDCAN_CLASSIC_CAN,
-      .TxEventFifoControl = FDCAN_NO_TX_EVENTS,
-      .MessageMarker = 0u
-    };
-    uint8_t dataArr[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
-    HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan1, &txHeaderType, dataArr);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -290,28 +265,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/**
-  * @brief  Rx FIFO 0 callback.
-  * @param  hfdcan pointer to an FDCAN_HandleTypeDef structure that contains
-  *         the configuration information for the specified FDCAN.
-  * @param  RxFifo0ITs indicates which Rx FIFO 0 interrupts are signaled.
-  *         This parameter can be any combination of @arg FDCAN_Rx_Fifo0_Interrupts.
-  */
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-  uint8_t rxData[8U];
-  if ((RxFifo0ITs & FDCAN_IT_RX_FIFO0_NEW_MESSAGE) != 0U)
-  {
-    /* Retrieve Rx messages from RX FIFO0 */
-    if (HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rxHeader, rxData) != HAL_OK)
-    {
-      Error_Handler();
-    }
 
-    printf("%lx\n", rxHeader.Identifier);
-
-  }
-}
 /* USER CODE END 4 */
 
 /**
