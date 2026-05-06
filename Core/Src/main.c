@@ -73,7 +73,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	HAL_StatusTypeDef halSt;
+  HAL_StatusTypeDef halSt;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -96,30 +96,30 @@ int main(void)
   MX_GPIO_Init();
   MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
-	halSt = HAL_FDCAN_ConfigGlobalFilter(
-		&hfdcan1,
-		FDCAN_ACCEPT_IN_RX_FIFO0,
-		FDCAN_ACCEPT_IN_RX_FIFO0,
-		FDCAN_FILTER_REMOTE,
-		FDCAN_FILTER_REMOTE
-	);
+  halSt = HAL_FDCAN_ConfigGlobalFilter(
+    &hfdcan1,
+    FDCAN_ACCEPT_IN_RX_FIFO0,
+    FDCAN_ACCEPT_IN_RX_FIFO0,
+    FDCAN_FILTER_REMOTE,
+    FDCAN_FILTER_REMOTE
+  );
 
 
-	if (halSt != HAL_OK) {
-		Error_Handler();
-	}
+  if (halSt != HAL_OK) {
+    Error_Handler();
+  }
 
-	halSt = HAL_FDCAN_ActivateNotification(
-		&hfdcan1,
-		FDCAN_IT_RX_FIFO0_NEW_MESSAGE,
-		0U
-	);
+  halSt = HAL_FDCAN_ActivateNotification(
+    &hfdcan1,
+    FDCAN_IT_RX_FIFO0_NEW_MESSAGE,
+    0U
+  );
 
-	if (halSt != HAL_OK) {
-		Error_Handler();
-	}
+  if (halSt != HAL_OK) {
+    Error_Handler();
+  }
 
-	HAL_FDCAN_Start(&hfdcan1);
+  HAL_FDCAN_Start(&hfdcan1);
   /* USER CODE END 2 */
 
   /* Initialize leds */
