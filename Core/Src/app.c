@@ -3,11 +3,14 @@
 #include <stdint.h>
 #include "uds.h"
 #include "isotp.h"
+#include "uds_def.h"
 
 #define UDS_REQ_ID (0x123)
 #define UDS_RESP_ID (0x456)
 
 void uds_isotp_send(uint8_t *data_ptr, uint16_t data_size);
+static void on_tester_present_st_change(bool active);
+static void on_diag_sess_ctrl_change(uint8_t active_sess);
 
 extern FDCAN_HandleTypeDef hfdcan1;
 
@@ -17,6 +20,19 @@ static uint8_t _isotp_tx_buf[128];
 
 static uint8_t _uds_rx_buf[128];
 static uint8_t _uds_tx_buf[128];
+
+uds_diag_sess_ctrl_sess_s _uds_diag_sessions[] = {
+	{
+		.subfunc = UDS_DIAG_SESS_CTRL_SUBFUNC_DEF,
+		.p2_server_max = 100,
+		.p2_star_server_max = 1000,
+	},
+	{
+		.subfunc = UDS_DIAG_SESS_CTRL_SUBFUNC_EXTENDED,
+		.p2_server_max = 200,
+		.p2_star_server_max = 2000
+	}
+};
 
 static uds_cfg_s _uds_cfg = {
 	.iso_tp_send_func_ptr = uds_isotp_send,
@@ -29,19 +45,39 @@ static uds_cfg_s _uds_cfg = {
 	.tx_buf_size = sizeof(_uds_tx_buf),
 
 	.tester_present_timeout_ms = 2000,
-	.tester_present_st_change_cbk_ptr = NULL
+	.tester_present_st_change_cbk_ptr = on_tester_present_st_change,
+
+	.diag_sess_ctrl_cfg = {
+		.available_sess_ptr = _uds_diag_sessions,
+		.available_sess_len = sizeof(_uds_diag_sessions) / sizeof(_uds_diag_sessions[0]),
+		.change_cbk_ptr = on_diag_sess_ctrl_change
+	}
 };
+
+static void on_tester_present_st_change(bool active)
+{
+	if(active) {
+		printf("Tester present\n");
+	} else {
+		printf("Tester absent\n");
+	}
+}
+
+static void on_diag_sess_ctrl_change(uint8_t active_sess)
+{
+	printf("Active diag ses %d\n", (int)active_sess);
+}
 
 uds_handle_s _uds_handle;
 
 void uds_isotp_send(uint8_t *data_ptr, uint16_t data_size)
 {
 	isotp_send(&_isotp_link, data_ptr, data_size);
-	printf("> ");
-	for(int i = 0; i < data_size; i++) {
-		printf("%02X ", data_ptr[i]);
-	}
-	printf("\n");
+	//printf("> ");
+	//for(int i = 0; i < data_size; i++) {
+	//	printf("%02X ", data_ptr[i]);
+	//}
+	//printf("\n");
 }
 
 /* required, this must send a single CAN message with the given arbitration
@@ -102,11 +138,11 @@ void app(void)
 		if(isotp_ret == ISOTP_RET_OK) {
 			err = UDS_ERR_OK;
 			uds_put(&_uds_handle, payload_buf, payload_size, &err);
-			printf("< ");
-			for(int i = 0; i < payload_size; i++) {
-				printf("%02X ", payload_buf[i]);
-			}
-			printf("\n");
+			//printf("< ");
+			//for(int i = 0; i < payload_size; i++) {
+			//	printf("%02X ", payload_buf[i]);
+			//}
+			//printf("\n");
 		}
 
 		err = UDS_ERR_OK;
